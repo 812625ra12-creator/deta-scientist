@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ゲーム付き電卓</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      user-select: none;
+    }
+
+    /* 壁紙（テーマ）定義 */
+    .theme-dark {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+      --calc-bg: #1e293b;
+      --text: #f8fafc;
+      --disp-bg: #0f172a;
+      --btn-num: #334155;
+      --btn-op: #4f46e5;
+      --btn-fn: #0284c7;
+    }
+
+    .theme-cyber {
+      background: linear-gradient(135deg, #050515 0%, #1a0033 100%);
+      --calc-bg: #120024;
+      --text: #00ffcc;
+      --disp-bg: #0a0017;
+      --btn-num: #240046;
+      --btn-op: #ff007f;
+      --btn-fn: #7b2cbf;
+    }
+
+    .theme-japan {
+      background: linear-gradient(135deg, #2b1055 0%, #7597de 100%);
+      --calc-bg: #1f1d2b;
+      --text: #f4ece1;
+      --disp-bg: #14121e;
+      --btn-num: #38354a;
+      --btn-op: #b8405e;
+      --btn-fn: #2e7d32;
+    }
+
+    .theme-pastel {
+      background: linear-gradient(135deg, #ffdde1 0%, #ee9ca7 100%);
+      --calc-bg: #ffffff;
+      --text: #4a4a4a;
+      --disp-bg: #fff5f5;
+      --btn-num: #f0f0f0;
+      --btn-op: #ffb7b2;
+      --btn-fn: #b5ead7;
+    }
+
+    .calc-card { background-color: var(--calc-bg); color: var(--text); }
+    .disp-bg { background-color: var(--disp-bg); color: var(--text); }
+    .btn-n { background-color: var(--btn-num); color: var(--text); }
+    .btn-o { background-color: var(--btn-op); color: #ffffff; }
+    .btn-f { background-color: var(--btn-fn); color: #ffffff; }
+
+    .btn-action:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+<body class="theme-dark min-h-screen flex flex-col items-center justify-center p-4">
+
+  <!-- メインカード -->
+  <div class="calc-card w-full max-w-sm rounded-3xl shadow-2xl p-5 border border-white/10 space-y-4">
+    
+    <!-- ヘッダー：モード切替 ＆ 壁紙選択 -->
+    <div class="flex items-center justify-between text-xs gap-2">
+      <!-- モード切り替えタブ -->
+      <div class="flex bg-black/30 p-1 rounded-xl border border-white/10">
+        <button id="tabCalcBtn" class="px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold" onclick="switchMode('calc')">📱 電卓</button>
+        <button id="tabGameBtn" class="px-3 py-1 rounded-lg text-white/70 hover:text-white" onclick="switchMode('game')">🎮 ゲーム</button>
+      </div>
+
+      <!-- 壁紙（テーマ）選択 -->
+      <div class="flex items-center gap-1">
+        <span>🎨</span>
+        <select id="themeSelect" class="bg-black/40 text-white rounded px-1.5 py-1 border border-white/20 outline-none cursor-pointer">
+          <option value="dark">ダーク</option>
+          <option value="cyber">サイバー</option>
+          <option value="japan">和風</option>
+          <option value="pastel">パステル</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- ================= 1. 電卓モード ================= -->
+    <div id="modeCalc" class="space-y-4">
+      <!-- ディスプレイ -->
+      <div class="disp-bg rounded-2xl p-4 text-right border border-white/10 min-h-[90px] flex flex-col justify-between">
+        <div id="calcExpr" class="text-xs opacity-60 font-mono min-h-[16px] overflow-x-auto whitespace-nowrap"></div>
+        <div id="calcDisplay" class="text-3xl font-bold font-mono overflow-x-auto whitespace-nowrap">0</div>
+      </div>
+
+      <!-- ボタン配置 -->
+      <div class="grid grid-cols-5 gap-2 font-bold text-sm">
+        <!-- 1行目 -->
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressAction('clear')">AC</button>
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressAction('back')">⌫</button>
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressKey('(')">(</button>
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressKey(')')">)</button>
+        <button class="btn-action btn-o py-3 rounded-xl" onclick="pressKey('/')">÷</button>
+
+        <!-- 2行目 -->
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressKey('sqrt')">√</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('7')">7</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('8')">8</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('9')">9</button>
+        <button class="btn-action btn-o py-3 rounded-xl" onclick="pressKey('*')">×</button>
+
+        <!-- 3行目 -->
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressKey('pow')">x²</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('4')">4</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('5')">5</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('6')">6</button>
+        <button class="btn-action btn-o py-3 rounded-xl" onclick="pressKey('-')">-</button>
+
+        <!-- 4行目 -->
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressKey('powY')">xʸ</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('1')">1</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('2')">2</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('3')">3</button>
+        <button class="btn-action btn-o py-3 rounded-xl" onclick="pressKey('+')">+</button>
+
+        <!-- 5行目 -->
+        <button class="btn-action btn-f py-3 rounded-xl" onclick="pressAction('negate')">±</button>
+        <button class="btn-action btn-n py-3 rounded-xl col-span-2" onclick="pressKey('0')">0</button>
+        <button class="btn-action btn-n py-3 rounded-xl" onclick="pressKey('.')">.</button>
+        <button class="btn-action btn-o py-3 rounded-xl bg-amber-500 hover:bg-amber-400" onclick="pressAction('calc')">=</button>
+      </div>
+    </div>
+
+    <!-- ================= 2. ゲームモード ================= -->
+    <div id="modeGame" class="hidden space-y-4">
+      <!-- サブゲーム切替 -->
+      <div class="flex justify-center gap-2">
+        <button id="btnSubDrill" class="text-xs px-3 py-1.5 rounded-full bg-indigo-600 text-white font-bold" onclick="switchGameSub('drill')">⚡ 計算タイムアタック</button>
+        <button id="btnSubHL" class="text-xs px-3 py-1.5 rounded-full bg-black/30 text-white/70" onclick="switchGameSub('hl')">🎯 数字当て(1-100)</button>
+      </div>
+
+      <!-- ゲームA: 計算ドリル -->
+      <div id="gameDrill" class="space-y-3 bg-black/20 p-4 rounded-2xl border border-white/5">
+        <div class="flex justify-between items-center text-xs font-bold">
+          <span>⏱️ 残り時間: <strong id="drillTimer" class="text-amber-400">15</strong>s</span>
+          <span>⭐ スコア: <strong id="drillScore" class="text-emerald-400">0</strong></span>
+        </div>
+
+        <div class="disp-bg p-4 rounded-xl text-center border border-white/10">
+          <div id="drillQuestion" class="text-2xl font-bold font-mono">スタートボタンを押してね</div>
+        </div>
+
+        <div class="flex gap-2">
+          <input type="number" id="drillInput" placeholder="答え" class="w-full bg-black/40 rounded-xl px-3 py-2 text-center text-lg font-mono border border-white/20 outline-none" disabled>
+          <button id="drillSubmitBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 rounded-xl text-sm whitespace-nowrap" onclick="submitDrillAnswer()" disabled>回答</button>
+        </div>
+
+        <button id="drillStartBtn" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 rounded-xl shadow transition" onclick="startDrillGame()">
+          ゲームスタート！
+        </button>
+      </div>
+
+      <!-- ゲームB: ハイ＆ロー -->
+      <div id="gameHL" class="hidden space-y-3 bg-black/20 p-4 rounded-2xl border border-white/5">
+        <div class="text-xs text-center opacity-80">1〜100の中から隠された数字を当てよう！</div>
+        
+        <div id="hlMsg" class="disp-bg p-3 rounded-xl text-center font-bold text-amber-300 min-h-[48px] flex items-center justify-center border border-white/10 text-sm">
+          予想する数字を入力してね！
+        </div>
+
+        <div class="flex gap-2">
+          <input type="number" id="hlInput" placeholder="1-100" class="w-full bg-black/40 rounded-xl px-3 py-2 text-center text-lg font-mono border border-white/20 outline-none">
+          <button class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold px-4 rounded-xl text-sm whitespace-nowrap" onclick="submitHLGuess()">予想</button>
+        </div>
+
+        <button class="w-full bg-slate-700 hover:bg-slate-600 text-white text-xs py-2 rounded-xl" onclick="resetHLGame()">
+          リセット
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    /* --- モード＆テーマ切替 --- */
+    let currentMode = 'calc';
+
+    function switchMode(mode) {
+      currentMode = mode;
+      const modeCalc = document.getElementById('modeCalc');
+      const modeGame = document.getElementById('modeGame');
+      const tabCalcBtn = document.getElementById('tabCalcBtn');
+      const tabGameBtn = document.getElementById('tabGameBtn');
+
+      if (mode === 'calc') {
+        modeCalc.classList.remove('hidden');
+        modeGame.classList.add('hidden');
+        tabCalcBtn.className = "px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold";
+        tabGameBtn.className = "px-3 py-1 rounded-lg text-white/70 hover:text-white";
+      } else {
+        modeCalc.classList.add('hidden');
+        modeGame.classList.remove('hidden');
+        tabCalcBtn.className = "px-3 py-1 rounded-lg text-white/70 hover:text-white";
+        tabGameBtn.className = "px-3 py-1 rounded-lg bg-indigo-600 text-white font-bold";
+      }
+    }
+
+    document.getElementById('themeSelect').addEventListener('change', (e) => {
+      document.body.className = `theme-${e.target.value} min-h-screen flex flex-col items-center justify-center p-4`;
+    });
+
+    /* --- 電卓ロジック --- */
+    let displayVal = '0';
+    let exprVal = '';
+
+    const dispEl = document.getElementById('calcDisplay');
+    const exprEl = document.getElementById('calcExpr');
+
+    function updateView() {
+      dispEl.textContent = displayVal;
+      exprEl.textContent = exprVal;
+    }
+
+    function pressKey(key) {
+      if (key === 'sqrt') {
+        displayVal = '√(' + (displayVal === '0' ? '' : displayVal);
+      } else if (key === 'pow') {
+        displayVal = displayVal + '^2';
+      } else if (key === 'powY') {
+        displayVal = displayVal + '^';
+      } else if (['+', '-', '*', '/'].includes(key)) {
+        exprVal += displayVal + ' ' + key + ' ';
+        displayVal = '0';
+      } else {
+        if (displayVal === '0' && key !== '.') {
+          displayVal = key;
+        } else {
+          displayVal += key;
+        }
+      }
+      updateView();
+    }
+
+    function pressAction(act) {
+      if (act === 'clear') {
+        displayVal = '0';
+        exprVal = '';
+      } else if (act === 'back') {
+        displayVal = displayVal.slice(0, -1) || '0';
+      } else if (act === 'negate') {
+        if (displayVal !== '0') {
+          displayVal = displayVal.startsWith('-') ? displayVal.slice(1) : '-' + displayVal;
+        }
+      } else if (act === 'calc') {
+        calculate();
+      }
+      updateView();
+    }
+
+    function calculate() {
+      const full = (exprVal + displayVal)
+        .replace(/×/g, '*')
+        .replace(/÷/g, '/');
+
+      try {
+        const formatted = full
+          .replace(/√\(([^)]+)\)/g, 'Math.sqrt($1)')
+          .replace(/\^/g, '**');
+
+        const res = window.Function('"use strict"; return (' + formatted + ')')();
+        if (isNaN(res) || !isFinite(res)) {
+          displayVal = 'エラー';
+        } else {
+          displayVal = String(Math.round(res * 1e10) / 1e10);
+        }
+      } catch (e) {
+        displayVal = 'エラー';
+      }
+      exprVal = '';
+    }
+
+    // 電卓モード用キーボード操作
+    window.addEventListener('keydown', (e) => {
+      if (currentMode !== 'calc') return;
+      const k = e.key;
+      if (!isNaN(k) || ['+', '-', '*', '/', '(', ')', '.'].includes(k)) {
+        pressKey(k);
+      } else if (k === 'Enter' || k === '=') {
+        pressAction('calc');
+      } else if (k === 'Backspace') {
+        pressAction('back');
+      } else if (k === 'Escape' || k === 'c' || k === 'C') {
+        pressAction('clear');
+      }
+    });
+
+    /* --- ゲームロジック --- */
+    function switchGameSub(sub) {
+      const drill = document.getElementById('gameDrill');
+      const hl = document.getElementById('gameHL');
+      const btnDrill = document.getElementById('btnSubDrill');
+      const btnHL = document.getElementById('btnSubHL');
+
+      if (sub === 'drill') {
+        drill.classList.remove('hidden');
+        hl.classList.add('hidden');
+        btnDrill.className = "text-xs px-3 py-1.5 rounded-full bg-indigo-600 text-white font-bold";
+        btnHL.className = "text-xs px-3 py-1.5 rounded-full bg-black/30 text-white/70";
+      } else {
+        drill.classList.add('hidden');
+        hl.classList.remove('hidden');
+        btnDrill.className = "text-xs px-3 py-1.5 rounded-full bg-black/30 text-white/70";
+        btnHL.className = "text-xs px-3 py-1.5 rounded-full bg-indigo-600 text-white font-bold";
+      }
+    }
+
+    // 計算ドリル
+    let drillTimer = null;
+    let drillTimeLeft = 15;
+    let drillScore = 0;
+    let drillCurrentAns = 0;
+
+    function startDrillGame() {
+      drillScore = 0;
+      drillTimeLeft = 15;
+      document.getElementById('drillScore').textContent = drillScore;
+      document.getElementById('drillTimer').textContent = drillTimeLeft;
+      
+      document.getElementById('drillInput').disabled = false;
+      document.getElementById('drillSubmitBtn').disabled = false;
+      document.getElementById('drillStartBtn').classList.add('hidden');
+
+      generateDrillQuestion();
+
+      clearInterval(drillTimer);
+      drillTimer = setInterval(() => {
+        drillTimeLeft--;
+        document.getElementById('drillTimer').textContent = drillTimeLeft;
+        if (drillTimeLeft <= 0) {
+          clearInterval(drillTimer);
+          document.getElementById('drillQuestion').textContent = `終了！スコア: ${drillScore}`;
+          document.getElementById('drillInput').disabled = true;
+          document.getElementById('drillSubmitBtn').disabled = true;
+          document.getElementById('drillStartBtn').classList.remove('hidden');
+          document.getElementById('drillStartBtn').textContent = 'もう一度挑戦！';
+        }
+      }, 1000);
+    }
+
+    function generateDrillQuestion() {
+      const ops = ['+', '-', '*'];
+      const op = ops[Math.floor(Math.random() * ops.length)];
+      let a = Math.floor(Math.random() * 15) + 1;
+      let b = Math.floor(Math.random() * 15) + 1;
+
+      if (op === '-') if (a < b) [a, b] = [b, a];
+
+      if (op === '+') drillCurrentAns = a + b;
+      if (op === '-') drillCurrentAns = a - b;
+      if (op === '*') drillCurrentAns = a * b;
+
+      document.getElementById('drillQuestion').textContent = `${a} ${op === '*' ? '×' : op} ${b} = ?`;
+      document.getElementById('drillInput').value = '';
+      document.getElementById('drillInput').focus();
+    }
+
+    function submitDrillAnswer() {
+      const inputVal = parseFloat(document.getElementById('drillInput').value);
+      if (inputVal === drillCurrentAns) {
+        drillScore += 10;
+        drillTimeLeft += 2; // ボーナス時間
+        document.getElementById('drillScore').textContent = drillScore;
+        document.getElementById('drillTimer').textContent = drillTimeLeft;
+        generateDrillQuestion();
+      } else {
+        document.getElementById('drillInput').value = '';
+      }
+    }
+
+    document.getElementById('drillInput').addEventListener('keypress', (e) => {
+      if (e.key === 'Enter') submitDrillAnswer();
+    });
+
+    // ハイ＆ロー
+    let hlSecret = Math.floor(Math.random() * 100) + 1;
+
+    function submitHLGuess() {
+      const val = parseInt(document.getElementById('hlInput').value);
+      const msg = document.getElementById('hlMsg');
+      if (isNaN(val)) return;
+
+      if (val === hlSecret) {
+        msg.textContent = `🎉 大正解！答えは ${hlSecret} でした！`;
+      } else if (val < hlSecret) {
+        msg.textContent = `📈 もっと【大きい】よ！（${val}より上）`;
+      } else {
+        msg.textContent = `📉 もっと【小さい】よ！（${val}より下）`;
+      }
+    }
+
+    function resetHLGame() {
+      hlSecret = Math.floor(Math.random() * 100) + 1;
+      document.getElementById('hlMsg').textContent = '新しい数字を決めたよ！';
+      document.getElementById('hlInput').value = '';
+    }
+
+    // 初期状態描画
+    updateView();
+  </script>
+</body>
+</html>
